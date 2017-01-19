@@ -1,9 +1,12 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+menu "Absorption"
+	"Load File", AbsorptionLoadFile()
+end
+
 menu "Wave-Toolbox"
 	"DisplayWave", DisplayWave()
 	"SetWaveScale", SetWaveScale()
-	"LoadAbsorptionFile", LoadAbsorptionFile()
 	"-"
 end
 
@@ -132,7 +135,7 @@ Function/S PopUpChooseFileFolder([strPrompt])
 	return (strPath + strFile)
 End
 
-Function LoadAbsorptionFile()
+Function AbsorptionLoadFile()
 	String strFile, strFileName
 	Variable numStart, numEnd
 	
