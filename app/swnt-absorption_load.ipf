@@ -74,11 +74,20 @@ Function/S PopUpChooseWave(strDataFolder, [strText])
 End
 
 //adapted from function OpenFileDialog on http://www.entorb.net/wickie/IGOR_Pro
-Function/S PopUpChooseFile()
+Function/S PopUpChooseFile([strPrompt])
+	String strPrompt
+	strPrompt = selectstring(paramIsDefault(strPrompt), strPrompt, "choose file")
+	
 	Variable refNum
 	String outputPath
+	String fileFilters = "Delimited Text Files (*.csv):.csv;"
+
+	//Browse to Absorption-Folder
+	String strPath = "C:Users:mak24gg:Documents:AKHertel:RAW:Absorption:"
+	NewPath/O/Q path, strPath
+	PathInfo/S path
 	
-	Open/D/R/M="Choose File" refNum
+	Open/D/F=fileFilters/R/M=strPrompt refNum
 	outputPath = S_fileName
 	return outputPath
 End 
@@ -127,12 +136,15 @@ Function LoadAbsorptionFile()
 	String strFile, strFileName
 	Variable numStart, numEnd
 	
-	strFile=PopUpChooseFileFolder(strPrompt="choose csv file")
-
+	//strFile=PopUpChooseFileFolder(strPrompt="choose csv file")
+	strFile=PopUpChooseFile(strPrompt="Choose Absorption File")
 	if (strlen(strFile)>0)
 		LoadWave/A/D/J/K=1/L={1,2,0,0,2}/O/Q strFile //Headings are in 2nd(0-1-2-->1) line, data starts in 2nd line, load all (0) from 1 to 2 columns, where d
 		wave wavWaveLength	= $stringfromlist(0,S_waveNames)
 		wave wavIntensity = $stringfromlist(1,S_waveNames)
+		//Delete last point.
+		WaveStats/Q/Z/M=1 wavWaveLength		
+		DeletePoints/M=0 (V_npnts),1, wavWaveLength, wavIntensity
 
 		numEnd = strsearch(strFile, ".",(strlen(strFile)-1),1)-1
 		numStart=strsearch(strFile, ":",numEnd,1)
@@ -140,11 +152,12 @@ Function LoadAbsorptionFile()
 		if (WaveExists($strFileName))			
 			//strFileName += "_autoload"
 		endif
-		
+
 		if (SetWaveScale(strX = nameofwave(wavWaveLength), strY = nameofwave(wavIntensity), strXUnit = "nm", strYUnit = "a.u."))
 			KillWaves/Z $strFileName
 			duplicate/O wavIntensity $strFileName		
 			KillWaves/Z wavWaveLength, wavIntensity
+			Display $strFileName
 			return 1
 		else
 			KillWaves/Z wavWaveLength, wavIntensity
