@@ -1,5 +1,9 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+//Absorption-Load
+//Version 5: removed "default unit" in SetWaveScale
+//Version 6: Added interpolate2 function to SetWaveScale, Added test for not equally spaced waves.
+
 menu "Absorption"
 	"Load File", AbsorptionLoadFile()
 end
@@ -86,7 +90,8 @@ Function/S PopUpChooseFile([strPrompt])
 	String fileFilters = "Delimited Text Files (*.csv):.csv;"
 
 	//Browse to Absorption-Folder
-	String strPath = "C:Users:mak24gg:Documents:AKHertel:RAW:Absorption:"
+	String strPath = "Z:RAW:Absorption:"
+	//String strPath = "C:Users:mak24gg:Documents:RAW:Absorption:"
 	NewPath/O/Q path, strPath
 	PathInfo/S path
 	
@@ -136,30 +141,32 @@ Function/S PopUpChooseFileFolder([strPrompt])
 End
 
 Function AbsorptionLoadFile()
-	String strFile, strFileName
+	String strFile, strFileName, strFileType
 	Variable numStart, numEnd
 	
-	//strFile=PopUpChooseFileFolder(strPrompt="choose csv file")
 	strFile=PopUpChooseFile(strPrompt="Choose Absorption File")
 	if (strlen(strFile)>0)
-		LoadWave/A/D/J/K=1/L={1,2,0,0,2}/O/Q strFile //Headings are in 2nd(0-1-2-->1) line, data starts in 2nd line, load all (0) from 1 to 2 columns, where d
+		//Headings are in 2nd(0-1-2-->1) line, data starts in 2nd line, load all (0) from 1 to 2 columns, where d
+		LoadWave/A/D/J/K=1/L={1,2,0,0,2}/O/Q strFile
 		wave wavWaveLength	= $stringfromlist(0,S_waveNames)
 		wave wavIntensity = $stringfromlist(1,S_waveNames)
 		//Delete last point.
 		WaveStats/Q/Z/M=1 wavWaveLength		
 		DeletePoints/M=0 (V_npnts),1, wavWaveLength, wavIntensity
 
-		numEnd = strsearch(strFile, ".",(strlen(strFile)-1),1)-1
-		numStart=strsearch(strFile, ":",numEnd,1)
-		strFileName = strFile[numStart, numEnd]
+		strFileName = ParseFilePath(3, strFile, ":", 0, 0)
+		strFileType  = ParseFilePath(4, strFile, ":", 0, 0)
+		strFileName = ReplaceString(" ",strFileName,"")
+		
 		if (WaveExists($strFileName))			
 			//strFileName += "_autoload"
+			Killwaves/Z $strFileName
 		endif
-
-		if (SetWaveScale(strX = nameofwave(wavWaveLength), strY = nameofwave(wavIntensity), strXUnit = "nm", strYUnit = "a.u."))
-			KillWaves/Z $strFileName
-			duplicate/O wavIntensity $strFileName		
-			KillWaves/Z wavWaveLength, wavIntensity
+		String strScaledWave = SetWaveScale(strX = nameofwave(wavWaveLength), strY = nameofwave(wavIntensity), strXUnit = "nm", strYUnit = "a.u.")
+		wave wavScaledWave = $strScaledWave
+		if (strlen(strScaledWave) > 0)
+			duplicate/O wavScaledWave $strFileName		
+			KillWaves/Z wavWaveLength, wavIntensity, wavScaledWave
 			Display $strFileName
 			return 1
 		else
@@ -188,7 +195,7 @@ Function DisplayWave()
 	display wavWave
 End
 
-Function SetWaveScale([strX, strY, strXUnit strYUnit])
+Function/S SetWaveScale([strX, strY, strXUnit strYUnit])
 	String strX, strY, strXUnit, strYUnit
 	strX	= selectstring(paramIsDefault(strX), strX, "")
 	strY	= selectstring(paramIsDefault(strY), strY, "")
@@ -197,11 +204,13 @@ Function SetWaveScale([strX, strY, strXUnit strYUnit])
 
 	//local Variables
 	String strDirectory
+	String strScaledWave = "", strDeltaWave = ""
 	Wave wavX, wavY
-	Variable numSize, numOffset, numDelta
+	Variable numSize, numOffset, numDelta, numEnd
+	Variable i
 
 	//strDirectory = PopUpChooseFolder()
-	strDirectory = "root:"	
+	strDirectory = "root:"	//by now, function only works in root directory.
 	if (stringmatch(strX,""))
 		strX=PopUpChooseWave(strDirectory, strText="choose x wave")
 	endif	
@@ -210,21 +219,60 @@ Function SetWaveScale([strX, strY, strXUnit strYUnit])
 	endif	
 
 	if (!waveExists($strX) && !waveExists($strY))
-		print "Error: Waves Do not exist or user cancelled at Prompt"
-		return 0
+		print "Error: Waves do not exist or user cancelled at Prompt"
+		return ""
 	endif
 	
 	wave wavX 	= $strX
-	wave wavY 	= $strY		
+	wave wavY 	= $strY
+	
 
 	numSize		= DimSize(wavX,0)
 	numOffset	= wavX[0]
-	numDelta 	= (wavX[(numSize-1)] - wavX[0]) / (numSize-1)
+	numEnd 		= wavX[(numSize-1)]
 	
-	SetScale/P x, numOffset, numDelta, strXUnit, wavY
-	SetScale/P y, 1, 1, strYUnit, wavY
+	// calculate numDelta
+	strDeltaWave = nameofwave(wavY) + "_Delta"
+	Make/O/N=(numSize-1) $strDeltaWave
+	wave wavDeltaWave = $strDeltaWave	
+	// extract delta values in wave
+	for (i=0; i<(numSize-1); i+=1)
+		wavDeltaWave[i] = (wavX[(i+1)] - wavX[i])
+	endfor
+	WaveStats/Q/W wavDeltaWave
+	KillWaves/Z  wavDeltaWave
+	wave M_WaveStats
+	numDelta = M_WaveStats[3]
+	//if X-Wave is not equally spaced, set the half minimum delta at all points.
+	// controll by calculating statistical error 2*sigma/rms
+	if ((2*M_WaveStats[4]/M_WaveStats[5]*100)>5)
+		print "SetWaveScale: Wave is not equally spaced. Setting new Delta."
+		print "SetWaveScale: Report this if it happens. Maybe numDelta is not Correct."
+		// avg - 2 * sdev
+		if (M_WaveStats[3] > 0)
+			numDelta = M_WaveStats[3] - 2 * M_WaveStats[4]
+		else
+			numDelta = M_WaveStats[3] + 2 * M_WaveStats[4]
+		endif
+	endif
+	numSize = ceil(abs((numEnd - numOffset)/numDelta)+1)
+	KillWaves/Z  M_WaveStats
 	
-	return 1
+	// interpolate to new Wave.
+	
+	// alternative solution:
+	//	interpolate can also take /N=(numSize) flag without the l=3 
+	//	specify Y=newWave as the new wavename without the need to create the wave prior to call
+	//	interpolate2/N=(numSize)/Y=wavScaledWave wavX,wavY
+	strScaledWave = nameofwave(wavY) + "_L"	
+	Make/O/N=(numSize) $strScaledWave	
+	wave wavScaledWave = $strScaledWave	
+	//alternative solution: SetScale/P x, numOffset, numDelta, strXUnit, wavScaledWave
+	SetScale/I x, numOffset, numEnd, strXUnit, wavScaledWave
+	SetScale/P y, 1, 1, strYUnit, wavScaledWave	
+	interpolate2/I=3/T=1/Y=wavScaledWave wavX,wavY
+	
+	return nameofwave(wavScaledWave)
 End
 
 Function RemoveWaveScale(wavWave)
