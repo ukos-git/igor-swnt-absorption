@@ -227,3 +227,17 @@ Function SetWaveScale([strX, strY, strXUnit strYUnit])
 	return 1
 End
 
+Function RemoveWaveScale(wavWave)
+	Wave wavWave
+	Variable numXOffset, numXDelta, numYOffset, numYDelta
+	String strXUnit, strYUnit
+	
+	strXUnit = ""
+	strYUnit = ""
+	numYOffset = DimOffset(wavWave,1)
+	numXOffset = DimOffset(wavWave,0)
+	numYDelta = DimDelta(wavWave,1)
+	numXDelta = DimDelta(wavWave,0)
+	SetScale/P x, numXOffset, numXDelta, strXUnit, wavWave
+	SetScale/P y, numYOffset, numYDelta, strYUnit, wavWave
+End
