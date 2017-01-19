@@ -1,16 +1,16 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 //Absorption-Load
-//Version 5: removed "default unit" in SetWaveScale
-//Version 6: Added interpolate2 function to SetWaveScale, Added test for not equally spaced waves.
+// Version 5: removed "default unit" in SetWaveScale
+// Version 6: Added interpolate2 function to SetWaveScale, Added test for not equally spaced waves.
+// Version 7: added linear Background removal function
 
 menu "Absorption"
 	"Load File", AbsorptionLoadFile()
-end
-
-menu "Wave-Toolbox"
-	"DisplayWave", DisplayWave()
+	"Linear Background on cursor", AbsorptionBgCorrPrompt()
+	"-"
 	"SetWaveScale", SetWaveScale()
+	"DisplayWave", DisplayWave()
 	"-"
 end
 
@@ -213,7 +213,7 @@ Function/S SetWaveScale([strX, strY, strXUnit strYUnit])
 	strDirectory = "root:"	//by now, function only works in root directory.
 	if (stringmatch(strX,""))
 		strX=PopUpChooseWave(strDirectory, strText="choose x wave")
-	endif	
+	endif
 	if (stringmatch(strY,""))
 		strY=PopUpChooseWave(strDirectory, strText="choose y wave")
 	endif	
@@ -288,4 +288,31 @@ Function RemoveWaveScale(wavWave)
 	numXDelta = DimDelta(wavWave,0)
 	SetScale/P x, numXOffset, numXDelta, strXUnit, wavWave
 	SetScale/P y, numYOffset, numYDelta, strYUnit, wavWave
+End
+
+// no error checking here.
+Function AbsorptionBgCorr(wavInput)
+	wave wavInput
+	
+	SetDataFolder root:
+	make/o/n=2 line
+	line={wavInput[pcsr(A)],wavInput[pcsr(B)]}
+	SetScale x, x2pnt(wavInput,pcsr(A)), x2pnt(wavInput, pcsr(B)), line
+	string strNewWave = nameofwave(wavInput) + "bgcorr"
+	duplicate/O wavInput $strNewWave
+	wave wavOutput = $strNewWave
+	interpolate2/T=1/I=3/Y=wavOutput line
+	wavOutput = wavInput-wavOutput
+	Killwaves/Z line
+End
+
+Function AbsorptionBgCorrPrompt()
+	string strWave = "absorption"
+	
+	Prompt strWave, "Wave for Peak-Analysis",popup TraceNameList("", ";",1)	//top graph "", seperate by ";", option 1: Include contour traces
+	DoPrompt "Enter wave", strWave
+
+	//$strIntensity is not possible for renamed traces: tracename#1 tracename#2 (see Instance Notation)
+	wave wavInput = TraceNameToWaveRef("",strWave) 
+	AbsorptionBgCorr(wavInput)
 End
