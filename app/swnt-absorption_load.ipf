@@ -192,8 +192,8 @@ Function SetWaveScale([strX, strY, strXUnit strYUnit])
 	String strX, strY, strXUnit, strYUnit
 	strX	= selectstring(paramIsDefault(strX), strX, "")
 	strY	= selectstring(paramIsDefault(strY), strY, "")
-	strXUnit	= selectstring(paramIsDefault(strXUnit), strXUnit, "default unit")	
-	strYUnit	= selectstring(paramIsDefault(strYUnit), strYUnit, "default unit")		
+	strXUnit	= selectstring(paramIsDefault(strXUnit), strXUnit, "")	
+	strYUnit	= selectstring(paramIsDefault(strYUnit), strYUnit, "")		
 
 	//local Variables
 	String strDirectory
