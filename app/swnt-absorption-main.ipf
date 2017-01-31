@@ -1,18 +1,5 @@
-#pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma rtGlobals=3
 #include <Peak AutoFind>
-
-
-//Absorption-Load
-// Version 5: removed "default unit" in SetWaveScale
-// Version 6: Added interpolate2 function to SetWaveScale, Added test for not equally spaced waves.
-// Version 7: added linear Background removal function
-// Version 8: added Differentition
-// Version 9: split to different Files
-// Version 10: Peak Find
-// Version 11: Background Fit to Minima
-// Version 12: Double Exponential fit
-// Version 13: Added Kataura Plot
-// Version 14: Added Folder Load
 
 Function AbsorptionLoadFolder()
 	String strFolder
