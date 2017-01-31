@@ -10,7 +10,7 @@
 // Version 10: Peak Find
 // Version 11: Background Fit to Minima
 
-Menu "AKH"	
+Menu "AKH"
 	Submenu "absorption"
 		"Load File", AbsorptionLoadFile()
 		"Load Directory", AbsorptionLoadFolder()
@@ -35,10 +35,10 @@ End
 Function AbsorptionDifferentiateDisplay()
 	wave input = AbsorptionPrompt()
 	wave output = AbsorptionDifferentiateWave(input, 10, 0)
-	
+
 	RemoveFromGraph/Z derivative1
 	RemoveFromGraph/Z derivative2
-	
+
 	if (Dimsize(output, 1) == 3)
 		AppendToGraph/R=axisderivative1 output[][%intensity]/TN=derivative1 vs output[][%wavelength]
 	else
@@ -46,14 +46,14 @@ Function AbsorptionDifferentiateDisplay()
 	endif
 
 	SetAxis/A=2 axisderivative1
-	ModifyGraph freePos(axisderivative1)=0	
+	ModifyGraph freePos(axisderivative1)=0
 	ModifyGraph noLabel(axisderivative1)=1
 	ModifyGraph lblPosMode(axisderivative1)=1
 	ModifyGraph axisEnab(axisderivative1)={0.5,1}
 	ModifyGraph zero(axisderivative1)=1
 	Label axisderivative1 "1st derivative"
-	
-	ModifyGraph mode(derivative1)=7	
+
+	ModifyGraph mode(derivative1)=7
 	ModifyGraph rgb(derivative1)=(0,0,0)
 End
 
@@ -64,7 +64,7 @@ Function AbsorptionDifferentiate2Display(setMinimum)
 		Wavestats/Q output
 		output-=V_max
 	endif
-	
+
 	RemoveFromGraph/Z derivative1
 	RemoveFromGraph/Z derivative2
 
@@ -73,16 +73,16 @@ Function AbsorptionDifferentiate2Display(setMinimum)
 	else
 		AppendToGraph/R=axisderivative2 output/TN=derivative2
 	endif
-	
+
 	SetAxis/A=2 axisderivative2
-	ModifyGraph freePos(axisderivative2)=0	
+	ModifyGraph freePos(axisderivative2)=0
 	ModifyGraph noLabel(axisderivative2)=1
 	ModifyGraph axisEnab(axisderivative2)={0.5,1}
 	Label axisderivative2 "2nd derivative"
-	
+
 	ModifyGraph mode(derivative2)=7
 	ModifyGraph usePlusRGB(derivative2)=0,useNegRGB(derivative2)=1
-#if IgorVersion() >= 7	
+#if IgorVersion() >= 7
 	ModifyGraph negRGB(derivative2)=(65535,54607,32768)
 	ModifyGraph plusRGB(derivative2)=(65535,0,0,32768)
 #else
@@ -90,7 +90,7 @@ Function AbsorptionDifferentiate2Display(setMinimum)
 	ModifyGraph plusRGB(derivative2)=(65535,0,0)
 #endif
 	ModifyGraph hbFill=0, hBarNegFill(derivative2)=2
-	ModifyGraph useNegPat(derivative2)=1		
+	ModifyGraph useNegPat(derivative2)=1
 	ModifyGraph rgb(derivative2)=(0,0,0)
 
 	ModifyGraph grid(axisderivative2)=1,lblPosMode(axisderivative2)=1
@@ -106,9 +106,9 @@ end
 // see AutoFindPeaksWorker from WM's <Peak AutoFind>
 Function AbsorptionPeakDisplay()
 	Wave wavInput, wavOutput
-	
+
 	String tablename, tracename
-	
+
 	Wave wavInput = AbsorptionPrompt()
 	Wave wavOutput = AbsorptionPeakFind(wavInput, sorted = 1, redimensioned = 1)
 
@@ -120,7 +120,6 @@ Function AbsorptionPeakDisplay()
 	ModifyGraph mode($tracename)=3
 	ModifyGraph marker($tracename)=19
 
-	
 	// show table for peak wave if not yet present
 	tablename = "table_" + NameOfWave(wavOutput)
 	DoWindow $tablename
@@ -147,14 +146,14 @@ Function AbsorptionBackgroundDisplay([bgcorr, debugging, doubleExp])
 	if (ParamIsDefault(doubleExp))
 		doubleExp = 1
 	endif
-	
+
 	Wave wavInput = AbsorptionPrompt()
 	if (bgcorr)
 		Wave wavOutput = AbsorptionBackgroundRemove(wavInput, doubleExp = doubleExp)
 	else
 		Wave wavOutput = AbsorptionBackgroundConstruct(wavInput, debugging = debugging, doubleExp = doubleExp)
 	endif
-	
+
 	trace_bgcorr = "corrected_" + NameOfWave(wavInput)
 	trace_bg = "background_" + NameOfWave(wavInput)
 
@@ -174,7 +173,7 @@ Function AbsorptionBackgroundDisplay([bgcorr, debugging, doubleExp])
 		ModifyGraph hbFill($trace_bg)=2
 		ModifyGraph zero(left)=0
 	endif
-	
+
 	if (debugging)
 
 	endif
@@ -227,18 +226,18 @@ Function AbsorptionKatauraDisplay()
 		return 0
 	endif
 	dfr = AbsorptionChiralityDFR(type="sds")
-	
+
 	Wave diameter = dfr:diameter
 	Wave lambda11 = dfr:lambda11
 	Wave lambda22 = dfr:lambda22
 	Wave/T nmindex = dfr:nmindex
-	
+
 	// remove old traces
 	RemoveFromGraph/W=$katauraWindow/Z kataura1
 	RemoveFromGraph/W=$katauraWindow/Z kataura2
 	RemoveFromGraph/W=$katauraWindow/Z kataura3
 	RemoveFromGraph/W=$katauraWindow/Z kataura4
-	
+
 	// add new traces
 	AppendToGraph/W=$katauraWindow/B=bottom_left/L=wavelength lambda11/TN=kataura1 vs diameter
 	AppendToGraph/W=$katauraWindow/B=bottom_left/L=wavelength lambda22/TN=kataura2 vs diameter
@@ -249,10 +248,10 @@ Function AbsorptionKatauraDisplay()
 	ModifyGraph marker(kataura1)=1,marker(kataura2)=1
 	ModifyGraph textMarker(kataura3)={:Packages:Absorption:chirality:sds:nmindex,"default",0,0,5,0.00,10.00}
 	ModifyGraph textMarker(kataura4)={:Packages:Absorption:chirality:sds:nmindex,"default",0,0,5,0.00,10.00}
-	
+
 	Label/W=$katauraWindow wavelength "wavelength / nm"
 	Label/W=$katauraWindow bottom_left "diameter / nm"
-	
+
 	// show peaks
 	tracePeaks = "peaks_" + NameOfWave(absorption)
 	Wave peaks =  AbsorptionPeakFind(absorption, sorted = 1, redimensioned = 1)
@@ -276,9 +275,9 @@ Function AbsorptionKatauraDisplay()
 	ModifyGraph userticks(wavelength)={axis_tick,axis_label}
 	ModifyGraph grid=1
 
-	// add legend	
+	// add legend
 	Legend/C/N=text0/J/F=0/A=MC "\\s(kataura1) E11\r\\s(kataura2) E22\r"
-	
+
 	// show table for peak wave if not yet present
 	tablename = "table_" + NameOfWave(absorption)
 	DoWindow $tablename
@@ -289,7 +288,7 @@ Function AbsorptionKatauraDisplay()
 			AppendToTable peaks.ld // .ld: table with column names
 		endif
 	else
-		Edit/N=$tablename peaks.ld as "Peaks for " + NameOfWave(absorption) 
+		Edit/N=$tablename peaks.ld as "Peaks for " + NameOfWave(absorption)
 	endif
 End
 
