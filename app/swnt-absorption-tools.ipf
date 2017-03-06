@@ -89,8 +89,14 @@ End
 Function/S PopUpChooseDirectory(strPath)
     String strPath
 
-	NewPath/O/Q path, strPath
+	// set start path
+	NewPath/Z/O/Q path, strPath
 	PathInfo/S path
+	if(!V_flag)
+		strPath = SpecialDirPath("Documents", 0, 0, 0)
+		NewPath/Z/O/Q path, strPath
+		PathInfo/S path
+	endif
 
 	NewPath/M="choose Folder"/O/Q path
 	PathInfo path
