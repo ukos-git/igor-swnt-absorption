@@ -98,13 +98,16 @@ Function/S PopUpChooseDirectory(strPath)
 		PathInfo/S path
 	endif
 
-	NewPath/M="choose Folder"/O/Q path
+	NewPath/Z/M="choose Folder"/O/Q path
 	PathInfo path
+	if(!V_flag)
+		return PopUpChooseDirectory(strPath)
+	endif
 	strPath = S_path
 
 	GetFileFolderInfo/Q/Z=1 strPath
 	if (!V_isFolder)
-		strPath = ""
+		return ""
 	endif
 
     return strPath
