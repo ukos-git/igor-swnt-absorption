@@ -276,6 +276,7 @@ Function/Wave AbsorptionPeakFind(wavInput, [sorted, redimensioned, differentiate
     WAVE wavOutput = Utilities#PeakFind(wavInput, sorted = sorted, redimensioned = redimensioned, differentiate2 = differentiate2)
 
     DFREF dfr = AbsorptionDFR(subDFR = NameOfWave(wavInput))
+    KillWaves/Z dfr:$(NameOfWave(wavInput) + "peaks")
     MoveWave wavOutput dfr:$(NameOfWave(wavInput) + "peaks")
 
     return wavOutput
