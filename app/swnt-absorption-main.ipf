@@ -117,13 +117,28 @@ Function/S AbsorptionLoadFile([strFile])
 End
 
 Function/Wave AbsorptionPrompt()
+    string redirectMe
     string strWave = "absorption"
+
+    DFREF dfr = root:Packages:Absorption:
 
     Prompt strWave, "Wave for Peak-Analysis",popup TraceNameList("", ";",1)    //top graph "", seperate by ";", option 1: Include contour traces
     DoPrompt "Enter wave", strWave
 
     //$strIntensity is not possible for renamed traces: tracename#1 tracename#2 (see Instance Notation)
     wave wavInput = TraceNameToWaveRef("",strWave)
+    
+    redirectMe = NameOfWave(wavInput)
+    if(WaveExists(dfr:$redirectMe))
+    	WAVE wavInput = dfr:$redirectMe
+    endif
+
+    redirectMe = NameOfWave(wavInput) + "j"
+    if(WaveExists(dfr:$redirectMe))
+    	WAVE wavInput = dfr:$redirectMe
+    endif
+    
+    print "input taken from", GetWavesDataFolder(wavInput, 2)
     return wavInput
 End
 
