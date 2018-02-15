@@ -243,11 +243,11 @@ End
 // See WM's CheckDisplayed
 Function AbsorptionIsWaveInGraph(search)
 	Wave search
-	
+
 	String currentTraces
 	Variable countTraces, i
 	Variable isPresent = 0
-		
+
 	currentTraces = TraceNameList("",";",1)
 	countTraces = ItemsInList(currentTraces)
 

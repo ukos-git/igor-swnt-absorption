@@ -127,7 +127,7 @@ Function/Wave AbsorptionPrompt()
 
     //$strIntensity is not possible for renamed traces: tracename#1 tracename#2 (see Instance Notation)
     wave wavInput = TraceNameToWaveRef("",strWave)
-    
+
     redirectMe = NameOfWave(wavInput)
     if(WaveExists(dfr:$redirectMe))
     	WAVE wavInput = dfr:$redirectMe
@@ -137,7 +137,7 @@ Function/Wave AbsorptionPrompt()
     if(WaveExists(dfr:$redirectMe))
     	WAVE wavInput = dfr:$redirectMe
     endif
-    
+
     print "input taken from", GetWavesDataFolder(wavInput, 2)
     return wavInput
 End
