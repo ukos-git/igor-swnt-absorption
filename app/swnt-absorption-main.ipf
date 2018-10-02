@@ -169,8 +169,8 @@ Function/Wave AbsorptionDifferentiateWave(wavInput, numSmooth, type)
 
     DFREF dfr = AbsorptionDFR(subDFR = NameOfWave(wavInput))
 
-    wave wavOutput = Utilities#DifferentiateWave(wavInput, numSmooth, type)
-    MoveWave wavOutput, dfr:$(NameOfWave(wavInput) + "d")
+    wave temp = Utilities#DifferentiateWave(wavInput, numSmooth, type)
+    Duplicate/O temp dfr:$(NameOfWave(wavInput) + "d")/WAVE=wavOutput
 
     return wavOutput
 End
