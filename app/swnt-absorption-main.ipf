@@ -312,7 +312,7 @@ Function/Wave AbsorptionBackgroundConstruct(wavInput, [debugging, doubleExp])
 
     String newName
     DFREF dfr = GetWavesDataFolderDFR(wavInput)
-    Wave wavOutput, wavDifferentiation, wavSmooth
+    Wave/Z wavOutput, wavDifferentiation, wavSmooth
 
     newName = NameOfWave(wavInput) + "_bg"
     Duplicate/O wavInput, dfr:$newName
@@ -369,7 +369,7 @@ Function/Wave AbsorptionBackgroundRemove(wavInput, [doubleExp])
 
     String newName
     DFREF dfr = GetWavesDataFolderDFR(wavInput)
-    Wave wavOutput, wavDifferentiation, wavSmooth
+    Wave/Z wavOutput, wavDifferentiation, wavSmooth
 
     newName = NameOfWave(wavInput) + "_bgcorr"
     Duplicate/O wavInput, dfr:$newName

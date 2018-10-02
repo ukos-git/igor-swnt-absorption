@@ -105,7 +105,7 @@ end
 
 // see AutoFindPeaksWorker from WM's <Peak AutoFind>
 Function AbsorptionPeakDisplay()
-	Wave wavInput, wavOutput
+	Wave/Z wavInput, wavOutput
 
 	String tablename, tracename
 
@@ -183,8 +183,8 @@ Function AbsorptionKatauraDisplay()
 	DFREF dfr
 	String tableName, katauraWindow, traceAbsorption, oldTraceAbsorption, tracePeaks
 	Variable numColumns
-	Wave peaks, diameter, lambda11, lambda22, absorption
-	Wave/T nmindex
+	Wave/Z peaks, diameter, lambda11, lambda22, absorption
+	Wave/Z/T nmindex
 
 	// SHOW ABSORPTION Spectrum in new Window
 	// get wave
