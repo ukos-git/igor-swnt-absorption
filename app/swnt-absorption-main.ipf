@@ -274,21 +274,10 @@ Function/Wave AbsorptionSearchGap(wavInput, wlmin, wlmax, tolerance)
 End
 
 // see AutomaticallyFindPeaks from WM's <Peak AutoFind>
-Function/Wave AbsorptionPeakFind(wavInput, [sorted, redimensioned, differentiate2])
+Function/Wave AbsorptionPeakFind(wavInput)
     Wave wavInput
-    Variable sorted, redimensioned, differentiate2
 
-    if (ParamIsDefault(redimensioned))
-        redimensioned = 0
-    endif
-    if (ParamIsDefault(sorted))
-        sorted = 0
-    endif
-    if (ParamIsDefault(differentiate2))
-        differentiate2 = 0
-    endif
-
-    WAVE wavOutput = Utilities#PeakFind(wavInput, sorted = sorted, redimensioned = redimensioned, differentiate2 = differentiate2)
+    WAVE wavOutput = Utilities#PeakFind(wavInput)
 
     DFREF dfr = AbsorptionDFR(subDFR = NameOfWave(wavInput))
     KillWaves/Z dfr:$(NameOfWave(wavInput) + "peaks")

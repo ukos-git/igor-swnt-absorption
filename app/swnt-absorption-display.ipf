@@ -110,7 +110,7 @@ Function AbsorptionPeakDisplay()
 	String tablename, tracename
 
 	Wave wavInput = AbsorptionPrompt()
-	Wave wavOutput = AbsorptionPeakFind(wavInput, sorted = 1, redimensioned = 1)
+	Wave wavOutput = AbsorptionPeakFind(wavInput)
 
 	tracename = "peaks_" + NameOfWave(wavInput)
 	RemoveFromGraph/Z $tracename
@@ -254,7 +254,7 @@ Function AbsorptionKatauraDisplay()
 
 	// show peaks
 	tracePeaks = "peaks_" + NameOfWave(absorption)
-	Wave peaks =  AbsorptionPeakFind(absorption, sorted = 1, redimensioned = 1)
+	Wave peaks =  AbsorptionPeakFind(absorption)
 	RemoveFromGraph/Z $tracePeaks
 	AppendToGraph/W=$katauraWindow/B=bottom_right/L=wavelength peaks[][%wavelength]/TN=$tracePeaks vs peaks[][%positionY]
 	ModifyGraph/W=$katauraWindow rgb($tracePeaks)=(0,0,65535)
